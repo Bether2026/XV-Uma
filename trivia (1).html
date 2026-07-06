@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b0e1e">
+<meta name="description" content="¿Cuánto conocés a Uma? Poné a prueba tu amistad antes de sus XV.">
+<title>Trivia · UMA · Mis XV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Italiana&family=Fraunces:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Outfit:wght@200;300;400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ═══ EL UMBRAL — trivia (misma familia visual que la invitación) ═══ */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --night:#0b0e1e; --night-2:#141a36;
+  --lila:#b9a7d9; --lila-deep:#6f5ba6;
+  --metal:#e9c49a; --ivory:#f6f1ea; --ink:#2a2438;
+  --rose:#c97b8e;
+  --line:rgba(233,196,154,.26);
+  --disp:'Italiana',serif; --serif:'Fraunces',serif; --sans:'Outfit',sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+body{
+  font-family:var(--serif);color:var(--ivory);background:var(--night);
+  min-height:100svh;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;cursor:pointer;color:inherit;background:none;border:0}
+a{color:inherit}
+.hidden{display:none!important}
+:focus-visible{outline:2px solid var(--metal);outline-offset:3px}
+
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+
+/* barra de progreso — hairline superior */
+#prog{position:fixed;top:0;left:0;right:0;height:2px;z-index:20;background:rgba(233,196,154,.12)}
+#progFill{height:100%;width:0;background:linear-gradient(90deg,var(--metal),var(--lila));transition:width .6s var(--ease)}
+
+.stage{
+  position:relative;z-index:2;min-height:100svh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:70px 22px 60px;text-align:center;
+}
+.wrap{max-width:480px;width:100%}
+
+.kicker{
+  font-family:var(--sans);font-weight:200;font-size:.6rem;letter-spacing:.4em;margin-right:-.4em;
+  text-transform:uppercase;color:var(--metal);display:block;margin-bottom:1rem;
+}
+.title{
+  font-family:var(--serif);font-weight:300;font-style:italic;
+  font-size:clamp(1.7rem,7vw,2.5rem);line-height:1.3;
+}
+.title b{font-weight:500;font-style:normal}
+.name{
+  font-family:var(--disp);font-size:clamp(3.4rem,17vw,5.4rem);
+  letter-spacing:.12em;margin-right:-.12em;line-height:1;margin:1.2rem 0;
+  text-shadow:0 0 60px rgba(185,167,217,.3);
+}
+.sub{font-weight:300;font-size:.98rem;line-height:1.8;color:rgba(246,241,234,.72)}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:var(--sans);font-weight:300;font-size:.68rem;letter-spacing:.32em;margin-right:-.32em;
+  text-transform:uppercase;padding:17px 32px;min-height:48px;border-radius:2px;
+  border:1px solid rgba(233,196,154,.45);color:var(--ivory);
+  transition:border-color .4s,background .4s,letter-spacing .5s var(--ease),transform .2s;
+  text-decoration:none;
+}
+.btn:hover{border-color:var(--metal);background:rgba(233,196,154,.06);letter-spacing:.42em}
+.btn:active{transform:scale(.97)}
+
+/* ═══ pantalla de pregunta ═══ */
+.q-meta{
+  font-family:var(--sans);font-weight:300;font-size:.6rem;letter-spacing:.34em;margin-right:-.34em;
+  text-transform:uppercase;color:var(--metal);
+  display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:1.6rem;
+}
+.q-meta::before,.q-meta::after{content:'';width:26px;height:1px;background:currentColor;opacity:.4}
+.q-text{
+  font-family:var(--serif);font-weight:300;font-style:italic;
+  font-size:clamp(1.4rem,5.6vw,1.9rem);line-height:1.4;margin-bottom:2rem;min-height:3em;
+}
+.opts{display:flex;flex-direction:column;gap:12px}
+.opt{
+  font-family:var(--sans);font-weight:300;font-size:.86rem;letter-spacing:.06em;
+  text-align:left;padding:16px 18px;min-height:52px;border-radius:2px;
+  border:1px solid var(--line);color:rgba(246,241,234,.88);
+  background:rgba(13,16,38,.5);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  display:flex;align-items:center;gap:12px;
+  transition:border-color .3s,background .3s,transform .2s var(--ease),opacity .4s;
+}
+.opt em{
+  font-family:var(--serif);font-style:italic;font-weight:300;
+  color:var(--metal);min-width:16px;
+}
+.opt:hover{border-color:rgba(233,196,154,.55)}
+.opt:active{transform:scale(.985)}
+.opt.right{border-color:var(--metal);background:rgba(233,196,154,.14);color:var(--ivory)}
+.opt.wrong{border-color:var(--rose);background:rgba(201,123,142,.14)}
+.opt.dim{opacity:.35;pointer-events:none}
+.opt.locked{pointer-events:none}
+.q-card{animation:qIn .7s var(--ease)}
+.q-card.out{animation:qOut .35s ease forwards}
+@keyframes qIn{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@keyframes qOut{to{opacity:0;transform:translateY(-18px)}}
+
+/* ═══ resultado ═══ */
+.score-num{
+  font-family:var(--serif);font-weight:300;
+  font-size:clamp(4.5rem,26vw,8rem);line-height:1;color:var(--metal);
+}
+.score-of{font-family:var(--sans);font-weight:200;font-size:.7rem;letter-spacing:.4em;margin-right:-.4em;text-transform:uppercase;color:rgba(246,241,234,.6);display:block;margin:.8rem 0 1.6rem}
+.score-tier{
+  font-family:var(--serif);font-style:italic;font-weight:400;
+  font-size:clamp(1.4rem,6vw,1.9rem);color:var(--lila);margin-bottom:1rem;
+}
+.score-msg{font-weight:300;font-size:.95rem;line-height:1.8;color:rgba(246,241,234,.75);margin-bottom:2.2rem}
+.res-actions{display:flex;flex-direction:column;gap:12px;align-items:center}
+
+footer{
+  position:relative;z-index:2;text-align:center;padding:0 22px 42px;
+  font-family:var(--sans);font-weight:200;font-size:.52rem;letter-spacing:.3em;
+  text-transform:uppercase;color:rgba(246,241,234,.4);
+}
+footer a{color:var(--lila);text-decoration:none;border-bottom:1px dotted var(--line)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<canvas id="sky" aria-hidden="true"></canvas>
+<div id="prog" aria-hidden="true"><div id="progFill"></div></div>
+
+<!-- ═══ INTRO ═══ -->
+<div class="stage" id="scIntro">
+  <div class="wrap">
+    <span class="kicker">Una puerta más · La trivia</span>
+    <h1 class="title">¿Cuánto conocés a</h1>
+    <p class="name">UMA</p>
+    <p class="sub">Siete preguntas antes de cruzar el umbral.<br>Poné a prueba tu amistad.</p>
+    <div style="margin-top:2.4rem">
+      <button class="btn" id="btnStart">Comenzar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PREGUNTA ═══ -->
+<div class="stage hidden" id="scQuiz">
+  <div class="wrap q-card" id="qCard">
+    <p class="q-meta"><span id="qMeta">01 / 07</span></p>
+    <h2 class="q-text" id="qText"></h2>
+    <div class="opts" id="qOpts"></div>
+  </div>
+</div>
+
+<!-- ═══ RESULTADO ═══ -->
+<div class="stage hidden" id="scEnd">
+  <div class="wrap">
+    <span class="kicker">Tu resultado</span>
+    <p class="score-num" id="endNum">0</p>
+    <span class="score-of" id="endOf">de 7 correctas</span>
+    <p class="score-tier" id="endTier"></p>
+    <p class="score-msg" id="endMsg"></p>
+    <div class="res-actions">
+      <button class="btn" id="btnAgain">Jugar de nuevo</button>
+      <a class="btn" href="index.html" style="border-color:rgba(185,167,217,.5);color:var(--lila)">Volver a la invitación</a>
+    </div>
+  </div>
+</div>
+
+<footer>Una experiencia de <a href="#" target="_blank" rel="noopener">Bether Studio</a></footer>
+
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════════════════
+   ⚠ PLACEHOLDER — preguntas y respuestas INVENTADAS para demo.
+   Reemplazar con datos reales de Uma antes de publicar.
+   `a` = índice de la opción correcta.
+   ═══════════════════════════════════════════════════════════════ */
+const QUIZ = [
+  { q: '¿Cuál es el color favorito de Uma?',
+    o: ['Rojo', 'Lila', 'Verde', 'Celeste'], a: 1 },
+  { q: '¿Qué plato no puede faltar en su mesa?',
+    o: ['Sushi', 'Tacos', 'Ñoquis de la nonna', 'Ensalada césar'], a: 2 },
+  { q: 'Un domingo perfecto para Uma es…',
+    o: ['Madrugar a correr', 'Series, mate y manta', 'Limpiar su cuarto', 'Estudiar química'], a: 1 },
+  { q: '¿Cuál es su materia favorita del colegio?',
+    o: ['Arte', 'Matemática', 'Educación Física', 'Historia'], a: 0 },
+  { q: '¿A qué ciudad sueña viajar?',
+    o: ['Tokio', 'Nueva York', 'Roma', 'París'], a: 3 },
+  { q: '¿Cómo le dicen sus amigas?',
+    o: ['"Umi"', '"La Uma"', '"Mumi"', 'Por el apellido'], a: 0 },
+  { q: 'Si suena su canción en la previa, Uma…',
+    o: ['La saltea', 'Sube el volumen y canta a los gritos', 'Se va de la sala', 'La tararea bajito'], a: 1 }
+];
+const ROMANS = ['I','II','III','IV','V','VI','VII','VIII','IX','X'];
+
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, '0');
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let visible = !document.hidden;
+document.addEventListener('visibilitychange', () => { visible = !document.hidden; });
+
+/* ═══ CIELO — versión liviana de la invitación (solo noche) ═══ */
+(function sky() {
+  const cv = $('sky'), ctx = cv.getContext('2d');
+  let W = 0, H = 0, t = 0, lastT = 0, lastW = 0, lastH = 0;
+  const stars = [];
+  function resize() {
+    W = innerWidth; H = innerHeight;
+    const dpr = Math.min(devicePixelRatio || 1, W < 520 ? 2 : 1.75);
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const heightOnly = W === lastW && Math.abs(H - lastH) < 180 && stars.length;
+    lastW = W; lastH = H;
+    if (!heightOnly) {
+      stars.length = 0;
+      const n = Math.max(60, Math.min(150, Math.round(W * H / 7000)));
+      for (let i = 0; i < n; i++) {
+        const big = Math.random() < .12;
+        stars.push({
+          x: Math.random(), y: Math.random(),
+          r: big ? 1.5 + Math.random() * 1 : .6 + Math.random(),
+          big, ph: Math.random() * 6.28, sp: .35 + Math.random() * .8
+        });
+      }
+    }
+    if (REDUCED) draw(0);
+  }
+  function draw(dt) {
+    t += dt;
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#070a18'); g.addColorStop(.6, '#0d1226'); g.addColorStop(1, '#141a36');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const gg = ctx.createRadialGradient(W * .5, H * .95, 0, W * .5, H * .95, H * .6);
+    gg.addColorStop(0, 'rgba(111,91,166,.16)'); gg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = gg; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#f4ecff';
+    for (const s of stars) {
+      const tw = REDUCED ? .85 : (.6 + .4 * Math.sin(t * .04 * s.sp + s.ph));
+      const x = s.x * W, y = s.y * H;
+      ctx.globalAlpha = tw;
+      ctx.beginPath(); ctx.arc(x, y, s.r, 0, Math.PI * 2); ctx.fill();
+      if (s.big) {
+        ctx.globalAlpha = tw * .55;
+        const L = s.r * 4.2;
+        ctx.fillRect(x - L, y - .5, L * 2, 1);
+        ctx.fillRect(x - .5, y - L, 1, L * 2);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+  function frame(now = performance.now()) {
+    const dt = Math.min((now - lastT) / 16.67, 2.5);
+    lastT = now;
+    if (visible) draw(dt);
+    requestAnimationFrame(frame);
+  }
+  addEventListener('resize', resize);
+  resize();
+  if (!REDUCED) { lastT = performance.now(); requestAnimationFrame(frame); }
+})();
+
+/* ═══ LÓGICA DE LA TRIVIA ═══ */
+let idx = 0, score = 0, locked = false;
+
+function show(id) {
+  ['scIntro', 'scQuiz', 'scEnd'].forEach(s => $(s).classList.toggle('hidden', s !== id));
+}
+function setProg() {
+  $('progFill').style.width = (idx / QUIZ.length * 100) + '%';
+}
+
+function renderQ() {
+  locked = false;
+  const item = QUIZ[idx];
+  const card = $('qCard');
+  card.classList.remove('out');
+  $('qMeta').textContent = pad(idx + 1) + ' / ' + pad(QUIZ.length);
+  $('qText').textContent = item.q;
+  const box = $('qOpts');
+  box.innerHTML = '';
+  item.o.forEach((txt, i) => {
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.innerHTML = `<em>${ROMANS[i]}</em><span>${txt}</span>`;
+    b.addEventListener('click', () => pick(b, i));
+    box.appendChild(b);
+  });
+  /* re-disparar la animación de entrada */
+  card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
+  setProg();
+}
+
+function pick(btn, i) {
+  if (locked) return;
+  locked = true;
+  const item = QUIZ[idx];
+  const opts = [...document.querySelectorAll('.opt')];
+  opts.forEach(o => o.classList.add('locked'));
+  const ok = i === item.a;
+  if (ok) { score++; btn.classList.add('right'); }
+  else {
+    btn.classList.add('wrong');
+    opts[item.a].classList.add('right');
+  }
+  opts.forEach((o, j) => { if (j !== i && j !== item.a) o.classList.add('dim'); });
+  if (navigator.vibrate) navigator.vibrate(ok ? 12 : [8, 40, 8]);
+  setTimeout(next, ok ? 850 : 1250);
+}
+
+function next() {
+  idx++;
+  if (idx >= QUIZ.length) { end(); return; }
+  const card = $('qCard');
+  card.classList.add('out');
+  setTimeout(renderQ, REDUCED ? 0 : 340);
+}
+
+function end() {
+  $('progFill').style.width = '100%';
+  show('scEnd');
+  $('endNum').textContent = score;
+  $('endOf').textContent = 'de ' + QUIZ.length + ' correctas';
+  const tiers = [
+    { min: 7, t: 'Alma gemela', m: 'Conocés a Uma mejor que ella misma. Del otro lado del umbral te espera un abrazo.' },
+    { min: 5, t: 'Del círculo íntimo', m: 'Casi perfecto: se nota que compartieron mil madrugadas. Uma va a estar orgullosa.' },
+    { min: 3, t: 'Amistad en construcción', m: 'Vas por buen camino. La gran noche es la excusa perfecta para conocerla mejor.' },
+    { min: 0, t: 'Recién llegás a su mundo', m: 'No pasa nada: las mejores historias empiezan cruzando un umbral. Nos vemos el 6 de diciembre.' }
+  ];
+  const tier = tiers.find(t => score >= t.min);
+  $('endTier').textContent = tier.t;
+  $('endMsg').textContent = tier.m;
+}
+
+$('btnStart').addEventListener('click', () => { idx = 0; score = 0; show('scQuiz'); renderQ(); });
+$('btnAgain').addEventListener('click', () => { idx = 0; score = 0; show('scQuiz'); renderQ(); });
+</script>
+</body>
+</html>
